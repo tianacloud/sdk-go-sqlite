@@ -1,0 +1,6 @@
+github.com/tianacloud/sdk-go v1.0.0 h1:TRlLNIC+un5zWXGdV3amBt2JWdNwBtqYEfuhViuFKBE=
+github.com/tianacloud/sdk-go v1.0.0/go.mod h1:AOZaHOcz4zQs0GoLGOCTyAA4qr5om9xyJtFUylrlvw4=
+golang.org/x/net v0.57.0 h1:K5+3DljvIuDG9/Jv9rvyMywYNFCQ9RSUY6OOTTkT+tE=
+golang.org/x/net v0.57.0/go.mod h1:KpXc8iv+r3XplLAG/f7Jsf9RPszJzdR0f58q9vGOuEU=
+golang.org/x/text v0.40.0 h1:Ub2Z6/xjgF1WrYQz2nuITOEegKFtiIy+rieRJ5lHZKs=
+golang.org/x/text v0.40.0/go.mod h1:hpnzDAfGV753zIKo+wk3u1bVKCGPbrnF7+7LBF/UHVY=
