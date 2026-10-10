@@ -34,7 +34,7 @@ Do not return ErrBadConn after any send: uncertain outcomes must never cause
 database/sql to replay writes. Mark unusable; Validator discards on return.
 A known bad connection before send may return ErrBadConn; Connector never does.
 SQL errors expose bounded allowlisted codes, not arbitrary server messages/SQL,
-parameters or tokens. Cancellation and parse/transport errors poison the session.
+parameters or tokens. Cancellation and malformed-reply/transport errors poison the session.
 Close sends bounded Hrana close when usable; a confirmed stream close rolls back uncommitted work. Transport loss alone
 does not prove rollback: an unknown rotated baton can retain the transaction
 and locks until the App TTL cleanup.
@@ -153,3 +153,27 @@ Use the core v1.0.0 release (Go module version; immutable Git HTTPS revision for
 Node/Rust/Python), superseding the old historical pins above. Preserve third-party
 versions, TLS verification, no SQL replay and transaction/storage semantics.
 Use a disposable local App SQLite for demo verification; never production data.
+
+## Known SQL grammar rejection (2026-10-10)
+
+SQL_PARSE_ERROR is an App pre-execution grammar rejection. Expose its exact code
+with OutcomeUnknown=false after a complete coherent execute/get_autocommit
+response; preserve the confirmed transaction and allow subsequent statements on
+the same session. SQL/transport errors never authorize replay. Unknown error
+codes and malformed/ambiguous replies remain OutcomeUnknown=true and poison the
+session. The pooled driver's expected-autocommit guards remain unchanged.
+Validate out-of-transaction and active-transaction recovery through native
+TLS/H2 peers, no extra connections/replay, rollback and unknown-code poisoning.
+No wire/storage format or API change; downstream grammar delegation requires this fix
+in a genuinely published immutable SDK version. Commit/push/publication still
+require separate current-task authorization.
+
+## SQLite SDK v1.0.1 release (2026-10-10)
+
+Current user authorizes publishing this SDK parse-rejection fix. Commit the
+reviewed changes to main without rewriting history and publish a new immutable
+v1.0.1 tag. Keep sdk-go pinned to v1.0.0; do not alter the existing v1.0.0 tag.
+Verify standalone GOWORK=off race/vet/module/source checks before publication,
+then verify the exact remote tag and fresh remote module resolution/checksum.
+Known SQL_PARSE_ERROR preserves a confirmed session/transaction; unknown replies
+remain conservative. CLI/npm publication is not part of this SDK release.

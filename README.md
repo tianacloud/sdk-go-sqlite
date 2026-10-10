@@ -13,10 +13,10 @@ Hrana 3 JSON at `/v3/pipeline`. SQL and values are not interpolated into URLs.
 
 ## Install and release status
 
-The release tag is `v1.0.0`. With repository access configured, install it:
+The release tag is `v1.0.1`. With repository access configured, install it:
 
 ```sh
-go get github.com/tianacloud/sdk-go-sqlite@v1.0.0
+go get github.com/tianacloud/sdk-go-sqlite@v1.0.1
 ```
 
 The sdk-go dependency is pinned to `v1.0.0`
@@ -206,6 +206,12 @@ Context causes remain available through errors.Is. OutcomeUnknown=false does
 not promise zero side effects or permission to retry: SQLite INSERT OR FAIL can
 retain partial statement effects while returning a constraint error. Use explicit
 transactions and rollback where atomic application behavior is required.
+
+The App's `SQL_PARSE_ERROR` means grammar rejection before statement execution.
+With a coherent `get_autocommit` response it is a known failure, preserves the
+confirmed session/transaction state, and does not authorize replay. An unknown
+error code or malformed response remains an unknown outcome and makes the
+session unusable.
 
 Known SQLite error codes are exposed without arbitrary server error messages,
 SQL, values or credentials. Unknown codes are reduced to a generic error.

@@ -13,10 +13,10 @@ TLS 1.3 / HTTP2 CONNECT 隧道，使用 `hrana-http` profile，再通过
 
 ## 安装与发布状态
 
-版本标签为 `v1.0.0`。配置仓库访问权限后安装：
+版本标签为 `v1.0.1`。配置仓库访问权限后安装：
 
 ```sh
-go get github.com/tianacloud/sdk-go-sqlite@v1.0.0
+go get github.com/tianacloud/sdk-go-sqlite@v1.0.1
 ```
 
 sdk-go 依赖固定为 `v1.0.0`（提交
@@ -232,3 +232,10 @@ Rust 仅用于集成夹具，普通 SDK 消费方不需要安装。
 `TIANA_TOKEN`、`TIANA_CA_FILE`（PEM 证书）和 `TIANA_GATEWAY_ADDRESS`（host:port）。
 自定义证书替换系统根证书池，仍验证证书和 Endpoint 主机名；证书不可读或无效时
 在连接前报错。示例仅执行带参数的 SELECT，不创建持久化表。
+
+### SQL 语法拒绝与会话保持
+
+App 的 `SQL_PARSE_ERROR` 表示语句执行前的语法拒绝。完整响应及
+`get_autocommit` 状态一致时，保留该错误码和已确认的会话/事务状态，
+`OutcomeUnknown=false`；这不授权重放 SQL。未知错误码、畸形响应和传输
+结果不明仍按未知结果处理，并使会话不可用。
