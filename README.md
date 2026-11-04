@@ -13,10 +13,10 @@ Hrana 3 JSON at `/v3/pipeline`. SQL and values are not interpolated into URLs.
 
 ## Install and release status
 
-The release tag is `v1.0.1`. With repository access configured, install it:
+The release tag is `v1.0.2`. With repository access configured, install it:
 
 ```sh
-go get github.com/tianacloud/sdk-go-sqlite@v1.0.1
+go get github.com/tianacloud/sdk-go-sqlite@v1.0.2
 ```
 
 The sdk-go dependency is pinned to `v1.0.0`
@@ -79,9 +79,12 @@ func main() {
 }
 ```
 
-Endpoint must be the full deployment hostname, such as
-`ep-01j5c9m7q2v8x4k6n3r0t1w2yz.db.example.test` (illustrative only).
-It must satisfy sdk-go's Endpoint ID and DNS rules. Gateway.RootCAs and
+`NewConnector` and `NewSession` accept a full deployment hostname in
+`Gateway.Endpoint`, such as `ep-01j5c9m7q2v8x4k6n3r0t1w2yz.db.example.test`
+(illustrative only), or `https://` followed by that hostname, with an optional
+trailing `/`. The SQLite SDK removes the scheme and root slash before opening
+the native CONNECT tunnel. The hostname must satisfy sdk-go's Endpoint ID and
+DNS rules. Gateway.RootCAs and
 Gateway.DialAddress support explicit test/custom routing with certificate
 verification intact. Each pooled connection owns one SDK client and tunnel.
 

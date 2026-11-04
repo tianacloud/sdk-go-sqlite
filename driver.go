@@ -18,6 +18,7 @@ import (
 // Config supplies the Gateway endpoint and optional InstanceToken. No
 // environment variables or local credential files are read implicitly.
 type Config struct {
+	// Gateway.Endpoint accepts a deployment hostname or https://hostname[/].
 	Gateway        tiana.Config
 	RequestTimeout time.Duration
 }
@@ -33,6 +34,9 @@ func (Connector) Format(s fmt.State, _ rune) {
 
 // NewConnector validates configuration without network or filesystem I/O.
 func NewConnector(config Config) (*Connector, error) {
+	if endpoint, ok := strings.CutPrefix(config.Gateway.Endpoint, "https://"); ok {
+		config.Gateway.Endpoint = strings.TrimSuffix(endpoint, "/")
+	}
 	if config.RequestTimeout < 0 {
 		return nil, failure("INVALID_TIMEOUT", false, nil)
 	}

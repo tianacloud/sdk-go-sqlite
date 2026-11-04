@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"database/sql"
 	"database/sql/driver"
 	"io"
 	"math/big"
@@ -48,7 +49,7 @@ func gatewayFixture(t *testing.T, inner func(io.Reader, io.Writer)) (Config, *at
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		state := r.Context().Value(connectionKey{}).(*tls.Conn).ConnectionState()
 		count.Add(1)
-		if r.Method != "CONNECT" || r.Host != endpoint+":443" || r.Header.Get("tiana-database-protocol") != "hrana-http" || state.Version != tls.VersionTLS13 || r.ProtoMajor != 2 {
+		if r.Method != "CONNECT" || r.Host != endpoint+":443" || r.Header.Get("tiana-database-protocol") != "hrana-http" || state.ServerName != endpoint || state.Version != tls.VersionTLS13 || r.ProtoMajor != 2 {
 			t.Error("invalid CONNECT contract")
 		}
 		if r.Header.Get("Proxy-Authorization") != "Bearer opaque-group-secret-with-arbitrary-prefix-and-length" {
@@ -79,6 +80,53 @@ func (w flushWriter) Write(p []byte) (int, error) {
 	n, e := w.ResponseWriter.Write(p)
 	w.ResponseWriter.(http.Flusher).Flush()
 	return n, e
+}
+
+func TestEndpointFormsConnectToSameGateway(t *testing.T) {
+	for _, form := range []struct{ name, prefix, suffix string }{
+		{"hostname", "", ""},
+		{"https", "https://", ""},
+		{"https-root", "https://", "/"},
+	} {
+		for _, mode := range []string{"database/sql", "session"} {
+			t.Run(form.name+"/"+mode, func(t *testing.T) {
+				cfg, connects := gatewayFixture(t, func(r io.Reader, w io.Writer) {
+					reader := bufio.NewReader(r)
+					for {
+						req, err := readPeer(reader)
+						if err != nil {
+							return
+						}
+						writeReply(w, replyBody(req, true))
+					}
+				})
+				cfg.Gateway.Endpoint = form.prefix + cfg.Gateway.Endpoint + form.suffix
+				if mode == "database/sql" {
+					connector, err := NewConnector(cfg)
+					if err != nil {
+						t.Fatal(err)
+					}
+					db := sql.OpenDB(connector)
+					defer db.Close()
+					if _, err = db.ExecContext(context.Background(), "SELECT 1"); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					session, err := NewSession(cfg)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer session.Close()
+					if _, err = session.ExecuteAndClose(context.Background(), "SELECT 1"); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if connects.Load() != 1 {
+					t.Fatalf("CONNECT count = %d, want 1", connects.Load())
+				}
+			})
+		}
+	}
 }
 
 func TestInvalidConfigAndDSN(t *testing.T) {

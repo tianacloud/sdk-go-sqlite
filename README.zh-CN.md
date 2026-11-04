@@ -13,10 +13,10 @@ TLS 1.3 / HTTP2 CONNECT 隧道，使用 `hrana-http` profile，再通过
 
 ## 安装与发布状态
 
-版本标签为 `v1.0.1`。配置仓库访问权限后安装：
+版本标签为 `v1.0.2`。配置仓库访问权限后安装：
 
 ```sh
-go get github.com/tianacloud/sdk-go-sqlite@v1.0.1
+go get github.com/tianacloud/sdk-go-sqlite@v1.0.2
 ```
 
 sdk-go 依赖固定为 `v1.0.0`（提交
@@ -76,9 +76,11 @@ func main() {
 }
 ```
 
-Endpoint 必须是部署提供的完整主机名，例如
+`NewConnector` 和 `NewSession` 的 `Gateway.Endpoint` 接受部署提供的完整主机名，例如
 `ep-01j5c9m7q2v8x4k6n3r0t1w2yz.db.example.test`（仅作示例），
-满足 sdk-go 的 Endpoint ID 与 DNS 格式要求。可通过 Gateway.RootCAs、
+也接受加上 `https://` 前缀的地址，末尾可带 `/`。SQLite SDK 去掉前缀和根路径斜杠后，
+使用该主机名建立原生 CONNECT 隧道；主机名仍须满足 sdk-go 的 Endpoint ID 与 DNS 格式要求。
+可通过 Gateway.RootCAs、
 Gateway.DialAddress 配置测试证书或自定义路由，证书校验保持开启。
 连接池中的每个连接拥有独立的 SDK Client、隧道和 Hrana 会话。
 
